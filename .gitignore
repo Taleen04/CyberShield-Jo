@@ -34,4 +34,4 @@ Thumbs.db
 
 #datasets
 .csv
-/app/ml/datasets/
+backend/app/ml/datasets/
