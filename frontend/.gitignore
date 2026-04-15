@@ -1,41 +1,3 @@
-# Python bytecode and cache
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.pytest_cache/
-.mypy_cache/
-
-# Environments
-.env
-.venv/
-env/
-venv/
-ENV/
-
-# Distribution / Build
-dist/
-build/
-*.egg-info/
-
-# IDEs (VS Code & PyCharm)
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Database (if using local SQLite)
-*.db
-*.sqlite3
-
-# OS specific
-.DS_Store
-Thumbs.db
-
-#datasets
-.csv
-backend/app/ml/datasets/
-
 # Miscellaneous
 *.class
 *.log
@@ -78,7 +40,6 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-/frontend/android/app/debug
-/frontend/android/app/profile
-/frontend/android/app/release
-
+/android/app/debug
+/android/app/profile
+/android/app/release

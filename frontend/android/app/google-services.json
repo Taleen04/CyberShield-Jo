@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "917027421258",
+    "project_id": "cypershieldjo",
+    "storage_bucket": "cypershieldjo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:917027421258:android:cabb4915e84fcc57573ab3",
+        "android_client_info": {
+          "package_name": "com.example.cyper_shield_jo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCI1LvTh8Rnktc2zpQ7abaTa3lSv2dklT0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
