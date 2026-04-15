@@ -24,8 +24,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="SMS Spam Classifier API",
-    description="Classifies SMS messages as spam or ham, and tracks reports per phone number.",
+    title="CyberShield JO",
+    description="",
     version="1.0.0",
     lifespan=lifespan,
 )
