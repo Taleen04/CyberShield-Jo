@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from fastapi.security import HTTPBearer
 from app.database import get_db
+from app.schemas.schemas import PredictRequest, PredictResponse
 from app.models.models import PredictionLog, PhoneNumber
 import app.ml.classifier as classifier
 from app.api.deps import get_current_user
