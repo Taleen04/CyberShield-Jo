@@ -20,8 +20,6 @@ def predict(message: str, message_source: str) -> dict:
     label_int = pipeline.predict(model_input)[0]
     probs = pipeline.predict_proba(model_input)[0]
 
-    print(f"Prediction probabilities: {probs}")
-
     confidence = float(max(probs))  # confidence of predicted class
 
     if label_int == 0:

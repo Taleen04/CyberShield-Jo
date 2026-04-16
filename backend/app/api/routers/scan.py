@@ -1,18 +1,21 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-
+from fastapi.security import HTTPBearer
 from app.database import get_db
-from app.schemas.schemas import PredictRequest, PredictResponse
 from app.models.models import PredictionLog, PhoneNumber
 import app.ml.classifier as classifier
 from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/scan", tags=["Prediction"])
+security = HTTPBearer()
 
 
 @router.post("/text", response_model=PredictResponse)
-def predict_text(request: PredictRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def predict_text(request: PredictRequest,
+                 db: Session = Depends(get_db),
+                 current_user=Depends(get_current_user),
+                 credentials = Depends(security)):
     # 1. Run the ML model
     result = classifier.predict(request.message, request.message_source)
 

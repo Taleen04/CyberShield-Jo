@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException
 from jose import jwt, JWTError
 from app.database import get_db
-from app.models.user import User
+from app.models.auth import User
 from app.utils.security import SECRET_KEY, ALGORITHM, oauth2_scheme
 
 def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)):

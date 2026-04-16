@@ -5,7 +5,7 @@ from app.database import get_db
 from app.models.models import PhoneNumber
 from app.schemas.schemas import PhoneNumberSummary, PhoneNumberDetail
 
-router = APIRouter(prefix="/reports", tags=["Reports"])
+router = APIRouter(prefix="/admin/reports", tags=["Admin Reports"])
 
 
 @router.get("/", response_model=list[PhoneNumberSummary])

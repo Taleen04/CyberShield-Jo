@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 # SQLite file will be created at the project root
-DATABASE_URL = "sqlite:///./sms_spam.db"
+DATABASE_URL = "sqlite:///./Cybershield.db"
 
 engine = create_engine(
     DATABASE_URL,
