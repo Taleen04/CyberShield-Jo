@@ -7,33 +7,39 @@ import types
 import pandas as pd
 from app.ml.model_loader import load_pipeline
 from app.models.lookup import ThreatCategory
-
-
+from app.ml.Preprocessing import clean_text
+from tensorflow.keras.preprocessing.sequence import pad_sequences
     
-def predict(message: str, message_source: str) -> dict:
-    pipeline = load_pipeline()
+def predict_text(message: str) -> dict:
+    model, tokenizer, max_len = load_pipeline('text')
+    
+    # 1. clean
+    cleaned = clean_text(message)
 
-    model_input = pd.DataFrame({
-        "text": [message],
-        "source": [message_source]
-    })
+    # 2. tokenize (USE FITTED tokenizer)
+    seq = tokenizer.texts_to_sequences([cleaned])
 
-    probs = pipeline.predict_proba(model_input)[0]
-    classes = pipeline.classes_
+    # 3. pad
+    padded = pad_sequences(seq, maxlen=max_len, padding='post', truncating='post')
 
-    prob_dict = dict(zip(classes, probs))
+    # 4. predict
+    probs = model.predict(padded)[0]
 
-    spam_prob = prob_dict.get("spam", 0.0)
-    phishing_prob = prob_dict.get("phishing", 0.0)
+    pred_class = np.argmax(probs)
+
+    print(f"[text-classifier] message: {message}")
+    print(f"[text-classifier] Model probabilities: {probs}")
+
+
+    spam_prob = probs[1]
+    phishing_prob = probs[2]
 
     # Combined malicious probability
     risk_score = spam_prob + phishing_prob
 
     # --- Category based ONLY on your thresholds ---
-    if risk_score < 0.10:
+    if pred_class == 0:
         category = ThreatCategory.SAFE
-    elif risk_score <= 0.60:
-        category = ThreatCategory.SUSPICIOUS
     else:
         category = ThreatCategory.HIGH_RISK
 
@@ -58,14 +64,14 @@ def predict(message: str, message_source: str) -> dict:
             reasons.append(f"High phishing probability ({phishing_prob:.2f})")
         else:
             reasons.append("High combined malicious probability")
-
+    print(f"[classifier] Prediction complete: {category}, risk_score={risk_score:.2f}, spam_prob={spam_prob:.2f}, phishing_prob={phishing_prob:.2f}")
     return {
         "risk_score": float(risk_score),
         "category": category,
         "probabilities": {
-            "legit": prob_dict.get("legit", 0.0),
-            "spam": spam_prob,
-            "phishing": phishing_prob
+            "legit": float(probs[0]),
+            "spam": float(spam_prob),
+            "phishing": float(phishing_prob)
         },
         "reasons": reasons
     }

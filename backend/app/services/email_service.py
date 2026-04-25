@@ -1,3 +1,4 @@
+import os
 import smtplib
 from email.message import EmailMessage
 from email.utils import formataddr
@@ -6,9 +7,8 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 
 SENDER_EMAIL = "cybershield128@gmail.com"
-SENDER_NAME = "Cyber Shield"
-APP_PASSWORD = "ywjv wqll ankv isxu"  # move this to env later
-
+SENDER_NAME = "Cyber Shield" 
+APP_PASSWORD = os.getenv("APP_PASSWORD")
 
 def send_email(to_email: str, subject: str, html_content: str):
     msg = EmailMessage()
@@ -31,7 +31,7 @@ def send_email(to_email: str, subject: str, html_content: str):
     
     
 def send_verification_email(email, token):
-    link = f"http://localhost:8000/auth/verify-email?token={token}"
+    link = f"https://cybershield-449512407166.europe-west1.run.app/auth/verify-email?token={token}"
 
     html = f"""
     <h2>Verify your email</h2>
@@ -51,7 +51,7 @@ def send_verification_email(email, token):
     
     
 def send_reset_email(email, token):
-    link = f"http://localhost:8000/auth/reset-password?token={token}"
+    link = f"https://cybershield-449512407166.europe-west1.run.app/auth/reset-password?token={token}"
 
     html = f"""
     <h2>Reset your password</h2>

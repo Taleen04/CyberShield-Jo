@@ -1,64 +1,142 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from datetime import datetime, timezone
+"""
+routers/scan.py
+---------------
+Scan (threat detection) endpoints.
+
+Routes:
+  POST /scan/url      analyze a URL
+  POST /scan/text     analyze a text message
+  POST /scan/phone    analyze a phone number
+  GET  /scan/history  paginated scan history for current user
+"""
+
+from fastapi import APIRouter, Depends, Query
 from fastapi.security import HTTPBearer
-from app.database import get_db
-from app.schemas.schemas import PredictRequest, PredictResponse
-from app.models.models import PredictionLog, PhoneNumber
-import app.ml.classifier as classifier
+from sqlalchemy.orm import Session
+
 from app.api.deps import get_current_user
+from app.database import get_db
+from app.schemas.scan import (
+    ScanHistoryResponse,
+    ScanPhoneRequest,
+    ScanResult,
+    ScanTextRequest,
+    ScanURLRequest,
+)
+from app.services import scan_service
 
-router = APIRouter(prefix="/scan", tags=["Prediction"])
-security = HTTPBearer()
+router = APIRouter(prefix="/scan", tags=["Scan"])
+_security = HTTPBearer()
 
 
-@router.post("/text", response_model=PredictResponse)
-def predict_text(request: PredictRequest,
-                 db: Session = Depends(get_db),
-                 current_user=Depends(get_current_user),
-                 credentials = Depends(security)):
-    # 1. Run the ML model
-    result = classifier.predict(request.message, request.message_source)
+# ──────────────────────────────────────────────
+# POST /scan/url
+# ──────────────────────────────────────────────
 
-    phone_record = None
-
-    # 2. If a phone number was provided, upsert it and update counters
-    if request.phone_number:
-        phone_record = (
-            db.query(PhoneNumber)
-            .filter(PhoneNumber.number == request.phone_number)
-            .first()
-        )
-
-        if not phone_record:
-            # First time we've seen this number — create a new row
-            phone_record = PhoneNumber(number=request.phone_number)
-            db.add(phone_record)
-            db.flush()  # assign an ID before we link predictions to it
-
-        # Update counters
-        phone_record.total_reports += 1
-        phone_record.last_seen = datetime.now(timezone.utc)
-
-        if result["label"] == "spam":
-            phone_record.spam_reports += 1
-        else:
-            phone_record.ham_reports += 1
-
-    # 3. Log the prediction
-    log = PredictionLog(
-        phone_number_id=phone_record.id if phone_record else None,
-        message_text=request.message,
-        predicted_label=result["label"],
-        confidence=result["confidence"],
+@router.post(
+    "/url",
+    response_model=ScanResult,
+    summary="Analyze a URL",
+    description=(
+        "Validates the URL format then checks the reputation database "
+        "and community reports to produce a final threat category."
+    ),
+)
+def scan_url(
+    request: ScanURLRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    _credentials=Depends(_security),
+) -> ScanResult:
+    result = scan_service.analyze_url(
+        db=db,
+        user_id=current_user.id,
+        url=request.url,
     )
-    db.add(log)
-    db.commit()
-    db.refresh(log)
+    return ScanResult(**result)
 
-    return PredictResponse(
-        label=result["label"],
-        confidence=result["confidence"],
+
+# ──────────────────────────────────────────────
+# POST /scan/text
+# ──────────────────────────────────────────────
+
+@router.post(
+    "/text",
+    response_model=ScanResult,
+    summary="Analyze a text message",
+    description=(
+        "Runs the ML classifier on the message (translating Arabic automatically), "
+        "extracts and analyzes any embedded URLs, and optionally incorporates "
+        "the sender phone number's risk profile."
+    ),
+)
+def scan_text(
+    request: ScanTextRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    _credentials=Depends(_security),
+) -> ScanResult:
+    result = scan_service.analyze_text(
+        db=db,
+        user_id=current_user.id,
+        message=request.message,
         phone_number=request.phone_number,
-        log_id=log.id,
     )
+    return ScanResult(**result)
+
+
+# ──────────────────────────────────────────────
+# POST /scan/phone
+# ──────────────────────────────────────────────
+
+@router.post(
+    "/phone",
+    response_model=ScanResult,
+    summary="Analyze a phone number",
+    description=(
+        "Looks up the phone number in aggregated community report data "
+        "and returns a risk category. Returns 'no_data' if the number "
+        "has never been reported."
+    ),
+)
+def scan_phone(
+    request: ScanPhoneRequest,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    _credentials=Depends(_security),
+) -> ScanResult:
+    result = scan_service.analyze_phone(
+        db=db,
+        user_id=current_user.id,
+        phone_number=request.phone_number,
+    )
+    return ScanResult(**result)
+
+
+# ──────────────────────────────────────────────
+# GET /scan/history
+# ──────────────────────────────────────────────
+
+@router.get(
+    "/history",
+    response_model=ScanHistoryResponse,
+    summary="Paginated scan history",
+    description=(
+        "Returns the authenticated user's scan history ordered by most recent first. "
+        "page_size is capped at 50."
+    ),
+)
+def scan_history(
+    page: int = Query(default=1, ge=1, description="Page number (1-based)"),
+    page_size: int = Query(default=10, ge=1, le=50, description="Items per page (max 50)"),
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    _credentials=Depends(_security),
+) -> ScanHistoryResponse:
+    data = scan_service.get_user_scan_history(
+        db=db,
+        user_id=current_user.id,
+        page=page,
+        page_size=page_size,
+    )
+    return ScanHistoryResponse(**data)

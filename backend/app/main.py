@@ -2,11 +2,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from app.api.routers import scan
+from app.api.routers import scan, report, admin, test
 from app.database import engine, Base
-from app.api.routers.admin import reports
 import app.ml.model_loader as model_loader
 import app.api.routers.auth as auth
+from dotenv import load_dotenv
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,15 +17,17 @@ async def lifespan(app: FastAPI):
     print("[startup] Database tables ready.")
 
     # Pre-load the ML model so the first request isn't slow
-    model_loader.load_pipeline()
-    print("[startup] ML pipeline loaded.")
+    model_loader.load_pipeline('text')
+    print("[startup] text ML pipeline loaded.")
+    model_loader.load_pipeline('url')
+    print("[startup] url ML pipeline loaded.")
 
     yield  # app is now running and serving requests
 
     # ── Shutdown ─────────────────────────────────────────────
     print("[shutdown] Cleaning up.")
 
-
+load_dotenv()
 app = FastAPI(
     title="CyberShield JO",
     description="",
@@ -42,8 +45,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 app.include_router(scan.router)
-app.include_router(reports.router)
-app.include_router(auth.router, prefix="/auth")
+app.include_router(auth.router)
+app.include_router(test.router)
+app.include_router(report.router)
+app.include_router(admin.router)
 
 
 @app.get("/health", tags=["Health"])

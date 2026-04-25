@@ -1,6 +1,5 @@
-from datetime import datetime
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, Boolean, 
+    Column, Index, Integer, String, Text, DateTime, Boolean, 
     Float, ForeignKey, Enum as SQLEnum, JSON
 )
 from sqlalchemy.orm import relationship
@@ -21,7 +20,7 @@ class Scan(Base):
     
     # Risk analysis results
     ml_confidence = Column(Float, nullable=True)  # 0-100%
-    threat_category = Column(SQLEnum(ThreatCategory), nullable=False) | Column(SQLEnum(URLClassification), nullable=False)
+    threat_category = Column(SQLEnum(ThreatCategory), nullable=False)
     
     # Detailed analysis results (stored as JSON for flexibility)
     analysis_details = Column(JSON, nullable=False)
@@ -37,15 +36,26 @@ class Scan(Base):
     # }
     
     # Optional fields for text message analysis
-    sender_phone_number = Column(String(50), nullable=True)  # If provided with text message
+    phone_number_id = Column(
+        Integer,
+        ForeignKey("phone_numbers.id", ondelete="SET NULL"),
+        nullable=True
+    )
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False, index=True)
 
     # Relationships
     user = relationship("User", back_populates="scans")
-
-
+    phone_number = relationship(
+        "PhoneNumber",
+        back_populates="scans"
+    )
+    __table_args__ = (
+        Index("idx_scans_user_created", "user_id", "created_at"),
+    )
+    
+    
 class Report(Base):
     """User-submitted reports (both post-analysis and manual)"""
     __tablename__ = "reports"
@@ -57,7 +67,8 @@ class Report(Base):
     input_type = Column(SQLEnum(InputType), nullable=False)
     input_value = Column(Text, nullable=False)
     notes = Column(Text, nullable=True)  # Optional user comments
-    location_inside_jordan = Column(Boolean, nullable=True)  # For manual reports (US-11-B)
+    location_inside_jordan = Column(Boolean, nullable=True)
+    admin_added = Column(Boolean, nullable=False)
     
     # Analysis reference (if report was made after analysis)
     scan_id = Column(Integer, ForeignKey("scans.id", ondelete="SET NULL"), nullable=True)
@@ -72,38 +83,25 @@ class Report(Base):
     admin_notes = Column(Text, nullable=True)
     
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False, index=True)
+    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc), nullable=False)
 
     # Relationships
-    user = relationship("User", back_populates="reports", foreign_keys=[user_id])
     scan = relationship("Scan")
-    reviewed_by = relationship("User", foreign_keys=[reviewed_by_admin_id])
+    user = relationship(
+        "User",
+        back_populates="reports",
+        foreign_keys=[user_id]
+    )
 
-
-class URLReputation(Base):
-    """Admin-managed URL reputation database"""
-    __tablename__ = "url_reputations"
-
-    id = Column(Integer, primary_key=True, index=True)
-    url = Column(String(2048), unique=True, index=True, nullable=False)  # Normalized URL
-    classification = Column(SQLEnum(URLClassification), nullable=False)
-    
-    # Metadata
-    added_by_admin_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    last_updated_by_admin_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    notes = Column(Text, nullable=True)  # Admin notes about the URL
-    
-    # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    
-    # Track changes for auditability (US-17: cannot remove entries)
-    is_active = Column(Boolean, default=True, nullable=False)  # Soft delete instead of hard delete
-
-    # Relationships
-    added_by = relationship("User", foreign_keys=[added_by_admin_id])
-    last_updated_by = relationship("User", foreign_keys=[last_updated_by_admin_id])
+    reviewer = relationship(
+        "User",
+        back_populates="reviewed_reports",
+        foreign_keys=[reviewed_by_admin_id]
+    )
+    __table_args__ = (
+        Index("idx_reports_user_status", "user_id", "status"),
+    )
     
     
 class PhoneNumber(Base):
@@ -123,10 +121,10 @@ class PhoneNumber(Base):
     )
 
     # Relationships
-    scans = relationship("Scan", back_populates="phone_numbers")
+    scans = relationship("Scan", back_populates="phone_number")
 
-    @property
+    @property 
     def spam_rate(self) -> float:
         if self.total_reports == 0:
             return 0.0
-        return round(self.spam_reports / self.total_reports, 4)
+        return round(self.spam_reports / self.total_reports, 4) 

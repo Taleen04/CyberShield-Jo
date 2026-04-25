@@ -34,7 +34,13 @@ Thumbs.db
 
 #datasets
 .csv
-backend/app/ml/datasets/
+app/ml/datasets/
+*.joblib
+*.pkl
+*.keras
+
+glove.6B.100d.txt
+
 
 # Miscellaneous
 *.class

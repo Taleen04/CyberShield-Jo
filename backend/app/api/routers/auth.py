@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse
 
 
 templates = Jinja2Templates(directory="app/templates")
-router = APIRouter(prefix="", tags=["Authentication"])
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register")
 def register(data: RegisterRequest, db: Session = Depends(get_db)):
@@ -35,7 +35,8 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     token, user = login_user(db, data.email, data.password)
     return {
         "access_token": token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "is_admin": user.role == "admin"
     }
     
     
@@ -84,4 +85,4 @@ def resend_verification_email(data: EmailVerificationRequest, db: Session = Depe
     user, token = request_new_verification_email(db, data.email)
     if user and token:
         send_verification_email(user.email, token)
-        return {"message": "If an account exists, a verification email has been resent"}
+    return {"message": "If an account exists, a verification email has been resent"}
