@@ -553,7 +553,7 @@ Module Design ──────────────────────
 ## Project Structure
 
 ```text
-cybershield-jo/
+cybershield/
 │
 ├── backend/                            # FastAPI backend service
 │   ├── app/
@@ -564,20 +564,6 @@ cybershield-jo/
 │   │   │   │   ├── report.py
 │   │   │   │   └── admin.py
 │   │   │   └── deps.py                 # Shared route dependencies
-│   │   │
-│   │   ├── ml/                         # ML models & pipelines
-│   │   │   ├── datasets/
-│   │   │   ├── models/
-│   │   │   ├── model_loader.py
-│   │   │   ├── text_classifier.py      # SMS / text phishing model
-│   │   │   ├── url_classifier.py       # URL phishing model
-│   │   │   ├── Preprocessing.py
-│   │   │   ├── combine_datasets.ipynb
-│   │   │   ├── nlp-glove-bert-tf-idf-lstm-explained.ipynb
-│   │   │   ├── sms_data_preprocessing.ipynb
-│   │   │   ├── sms_phishing.ipynb
-│   │   │   ├── url-phishing.ipynb
-│   │   │   └── url_data_prep.ipynb
 │   │   │
 │   │   ├── models/                     # SQLAlchemy ORM models
 │   │   │   ├── admin_audit_log.py
@@ -679,13 +665,25 @@ cybershield-jo/
 │   ├── analysis_options.yaml
 │   ├── firebase.json
 │   ├── pubspec.lock
-│   ├── pubspec.yaml
-│   └── README.md
+│   └── pubspec.yaml
 │
-├── postman/                            # Postman API collection
-├── .postman/
+├── machine learning/                   # ML models & pipelines
+│   ├── datasets/
+│   ├── models/
+│   ├── model_loader.py
+│   ├── text_classifier.py              # SMS / text phishing model
+│   ├── url_classifier.py               # URL phishing model
+│   ├── Preprocessing.py
+│   ├── combine_datasets.ipynb
+│   ├── nlp-glove-bert-tf-idf-lstm-explained.ipynb
+│   ├── sms_data_preprocessing.ipynb
+│   ├── sms_phishing.ipynb
+│   ├── url-phishing.ipynb
+│   └── url_data_prep.ipynb
+│
 ├── .dockerignore
-└── .gitignore
+├── .gitignore
+└── README.md                           # Centralized project documentation
 ```
 
 ---
