@@ -251,16 +251,16 @@ CyberShield JO follows a layered architecture centered around a **FastAPI backen
                            │ HTTPS
                            ▼
 ┌─────────────────────────────────────────────────────┐
-│                    FastAPI Backend                   │
+│                    FastAPI Backend                  │
 │                                                     │
-│  ┌────────────┐ ┌────────────┐ ┌────────────────┐ │
-│  │    Auth    │ │    Scan    │ │     Report     │ │
-│  │   Router   │ │   Router   │ │     Router     │ │
-│  └────────────┘ └────────────┘ └────────────────┘ │
+│  ┌────────────┐ ┌────────────┐ ┌────────────────┐   │
+│  │    Auth    │ │    Scan    │ │     Report     │   │
+│  │   Router   │ │   Router   │ │     Router     │   │
+│  └────────────┘ └────────────┘ └────────────────┘   │
 │                                                     │
 │  ┌────────────────────────────────────────────────┐ │
-│  │              Service Layer                    │ │
-│  │ Auth │ Scan │ Report │ Administration         │ │
+│  │              Service Layer                     │ │
+│  │ Auth │ Scan │ Report │ Administration          │ │
 │  └────────────────────────────────────────────────┘ │
 └───────────────┬─────────────────┬───────────────────┘
                 │                 │
