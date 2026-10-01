@@ -555,55 +555,137 @@ Module Design ──────────────────────
 ```text
 cybershield-jo/
 │
-├── app/
-│   ├── api/
-│   │   └── routers/
-│   │       ├── auth.py
-│   │       ├── scan.py
-│   │       ├── report.py
-│   │       └── admin.py
+├── backend/                            # FastAPI backend service
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── routers/                # Route handlers
+│   │   │   │   ├── auth.py
+│   │   │   │   ├── scan.py
+│   │   │   │   ├── report.py
+│   │   │   │   └── admin.py
+│   │   │   └── deps.py                 # Shared route dependencies
+│   │   │
+│   │   ├── ml/                         # ML models & pipelines
+│   │   │   ├── datasets/
+│   │   │   ├── models/
+│   │   │   ├── model_loader.py
+│   │   │   ├── text_classifier.py      # SMS / text phishing model
+│   │   │   ├── url_classifier.py       # URL phishing model
+│   │   │   ├── Preprocessing.py
+│   │   │   ├── combine_datasets.ipynb
+│   │   │   ├── nlp-glove-bert-tf-idf-lstm-explained.ipynb
+│   │   │   ├── sms_data_preprocessing.ipynb
+│   │   │   ├── sms_phishing.ipynb
+│   │   │   ├── url-phishing.ipynb
+│   │   │   └── url_data_prep.ipynb
+│   │   │
+│   │   ├── models/                     # SQLAlchemy ORM models
+│   │   │   ├── admin_audit_log.py
+│   │   │   ├── auth.py
+│   │   │   ├── lookup.py
+│   │   │   ├── scan.py
+│   │   │   └── __init__.py
+│   │   │
+│   │   ├── schemas/                    # Pydantic request/response schemas
+│   │   │   ├── admin.py
+│   │   │   ├── auth.py
+│   │   │   ├── report.py
+│   │   │   └── scan.py
+│   │   │
+│   │   ├── services/                   # Business logic layer
+│   │   │   ├── admin_service.py
+│   │   │   ├── auth_service.py
+│   │   │   ├── email_service.py
+│   │   │   ├── report_service.py
+│   │   │   └── scan_service.py
+│   │   │
+│   │   ├── templates/                  # HTML email templates
+│   │   │   ├── email_verification_error.html
+│   │   │   ├── email_verification_success.html
+│   │   │   └── reset_password.html
+│   │   │
+│   │   ├── utils/
+│   │   │   └── security.py
+│   │   │
+│   │   ├── database.py
+│   │   ├── main.py
+│   │   └── __init__.py
 │   │
-│   ├── core/
-│   │   ├── config.py
-│   │   └── security.py
+│   ├── alembic/                        # DB migrations
+│   │   ├── versions/
+│   │   ├── env.py
+│   │   ├── README
+│   │   └── script.py.mako
 │   │
-│   ├── models/
-│   │   ├── user.py
-│   │   ├── report.py
-│   │   └── scan.py
+│   ├── tests/
+│   │   ├── conftest.py
+│   │   ├── test_auth_routes.py
+│   │   ├── test_auth_setup.py
+│   │   ├── test_health_routes.py
+│   │   ├── test_main.py
+│   │   ├── test_report_routes.py
+│   │   └── test_scan_routes.py
 │   │
-│   ├── schemas/
-│   │   ├── user.py
-│   │   ├── report.py
-│   │   └── scan.py
-│   │
-│   ├── services/
-│   │   ├── auth_service.py
-│   │   ├── scan_service.py
-│   │   ├── report_service.py
-│   │   └── admin_service.py
-│   │
-│   └── ml/
-│       ├── text_classifier.py
-│       ├── url_analyzer.py
-│       └── preprocessing.py
-│
-├── tests/
-│   ├── test_auth.py
-│   ├── test_scan.py
-│   ├── test_report.py
-│   └── conftest.py
-│
-├── alembic/
-│   └── ...
-│
-├── docker/
+│   ├── .env
+│   ├── alembic.ini
 │   ├── Dockerfile
-│   └── docker-compose.yml
+│   ├── pytest.ini
+│   ├── requirements.txt
+│   └── run.py
 │
-├── requirements.txt
-├── .env.example
-└── README.md
+├── frontend/                           # Flutter client app
+│   ├── android/                        # Android platform files
+│   ├── ios/                            # iOS platform files
+│   ├── linux/                          # Linux platform files
+│   ├── macos/                          # macOS platform files
+│   ├── windows/                        # Windows platform files
+│   ├── web/                            # Web platform files
+│   │
+│   ├── assets/
+│   │   └── images/
+│   │       └── CyperShield_logo.png
+│   │
+│   ├── lib/
+│   │   ├── core/                       # Shared app-wide code
+│   │   │   ├── constants/
+│   │   │   ├── utils/
+│   │   │   └── widgets/
+│   │   │
+│   │   ├── feature/                    # Feature modules
+│   │   │   ├── auth_feature/
+│   │   │   ├── awareness_message/
+│   │   │   ├── contact_feature/
+│   │   │   ├── home_feature/
+│   │   │   ├── reports/
+│   │   │   ├── setting_feature/
+│   │   │   ├── share_feature/
+│   │   │   ├── submit_report/
+│   │   │   └── submit_report.dart
+│   │   │
+│   │   ├── l10n/                       # Localization (AR / EN)
+│   │   │   ├── app_ar.arb
+│   │   │   ├── app_en.arb
+│   │   │   ├── app_localizations.dart
+│   │   │   ├── app_localizations_ar.dart
+│   │   │   └── app_localizations_en.dart
+│   │   │
+│   │   ├── firebase_options.dart
+│   │   └── main.dart
+│   │
+│   ├── test/
+│   │   └── widget_test.dart
+│   │
+│   ├── .metadata
+│   ├── analysis_options.yaml
+│   ├── firebase.json
+│   ├── pubspec.lock
+│   ├── pubspec.yaml
+│   └── README.md
+│
+├── postman/                            # Postman API collection
+├── .postman/
+├── .dockerignore
+└── .gitignore
 ```
 
 ---
