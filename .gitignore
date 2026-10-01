@@ -11,6 +11,7 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+/.postman
 
 # IntelliJ related
 *.iml
@@ -135,4 +136,3 @@ app.*.map.json
 /frontend/android/app/debug
 /frontend/android/app/profile
 /frontend/android/app/release
-
