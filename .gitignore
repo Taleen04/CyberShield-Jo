@@ -18,7 +18,7 @@ postman/
 
 #datasets
 .csv
-/machine learning/datasets/
+/machine_learning/datasets/
 
 # IntelliJ related
 *.iml
