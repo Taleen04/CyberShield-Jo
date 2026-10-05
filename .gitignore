@@ -16,6 +16,10 @@ migrate_working_dir/
 .postman/
 postman/
 
+#datasets
+.csv
+/machine learning/datasets/
+
 # IntelliJ related
 *.iml
 *.ipr

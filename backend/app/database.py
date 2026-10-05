@@ -7,8 +7,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Fallback to SQLite locally
 if not DATABASE_URL:
-    DATABASE_URL = "postgresql://neondb_owner:npg_87pxFyruiflD@ep-bitter-paper-amnpbrdc.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require"
-    #DATABASE_URL = "sqlite:///./test.db"
+    DATABASE_URL = ""
+    
 # SQLite vs PostgreSQL handling
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
